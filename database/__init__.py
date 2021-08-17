@@ -74,8 +74,21 @@ def download(file_name: str):
     ]
     file = filtered_item[0]
 
+    if not file:
+        return {"msg": "Arquivo inexistente"}, 404
+
     return send_from_directory(
         directory=f".{FILES_DIRECTORY}",
         path=file,
         as_attachment=True
     )
+
+
+@app.get("/download/<string:file_type>&<string:compression_rate>")
+def download_dir_as_zip(file_type: str, compression_rate: str):
+    return send_from_directory(
+        directory=f".{FILES_DIRECTORY}",
+        path=FILES_DIRECTORY,
+        as_attachment=True
+    )
+    return {"msg": "i work"}
