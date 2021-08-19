@@ -5,6 +5,9 @@ app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 1000000
 
 FILES_DIRECTORY = "./images/"
+app.config["UPLOAD_FOLDER"] = FILES_DIRECTORY
+app.config["ALLOWED_EXTENSIONS"] = ["jpg", "png", "gif"]
+
 
 if not os.path.exists(FILES_DIRECTORY):
     os.makedirs(FILES_DIRECTORY)
@@ -84,11 +87,32 @@ def download(file_name: str):
     )
 
 
-@app.get("/download/<string:file_type>&<string:compression_rate>")
-def download_dir_as_zip(file_type: str, compression_rate: str):
+@app.get("/download-zip")
+def download_dir_as_zip():
+
+    if len(os.listdir(FILES_DIRECTORY)) == 0:
+        return {"msg": "Não há arquivos a serem baixados"}, 404
+
+    compression_rate = request.args.get("compression_rate", 6)
+    extension = request.args.get("file_type", None)
+    if extension:
+        filtered_items = [
+            item for item in os.listdir(FILES_DIRECTORY)
+            if item.split(".")[-1] == extension
+        ]
+        if extension in filtered_items:
+            os.system(
+                f"zip -{compression_rate} -r /tmp/images.zip {FILES_DIRECTORY}/*{extension}"
+            )
+        else:
+            return {"msg": "Arquivo não existe"}, 404
+    else:
+        os.system(
+            f"zip -{compression_rate} -r /tmp/images.zip {FILES_DIRECTORY}"
+        )
+
     return send_from_directory(
-        directory=f".{FILES_DIRECTORY}",
-        path=FILES_DIRECTORY,
+        directory="/tmp",
+        path="images.zip",
         as_attachment=True
-    )
-    return {"msg": "i work"}
+    ), 200
