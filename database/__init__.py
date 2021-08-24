@@ -7,7 +7,7 @@ env = Env()
 env.read_env()
 
 app = Flask(__name__)
-
+app.config["MAX_CONTENT_LENGTH"] = 1000000
 
 if not os.path.exists(env("FILES_DIRECTORY")):
     os.makedirs(env("FILES_DIRECTORY"))
@@ -28,6 +28,9 @@ def upload():
 
 @app.get("/files")
 def list_files():
+    """
+    lista todos os arquivos no banco de imagens
+    """
     try:
         return jsonify(os.listdir(env("FILES_DIRECTORY"))), 200
     except:
